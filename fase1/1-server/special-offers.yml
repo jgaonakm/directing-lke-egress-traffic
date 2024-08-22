@@ -1,0 +1,41 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: special-offers
+  labels:
+    app: system
+    subdomain: offers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      subdomain: offers
+  template:
+    metadata:
+      name: special-offers
+      labels:
+        subdomain: offers
+    spec:
+      containers:
+      - name: special-offers
+        image: jgaonaakm/special-offers:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: special-offers
+  labels:
+    app: system
+    subdomain: offers
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 5050
+    targetPort: http
+  selector:
+    subdomain: offers
