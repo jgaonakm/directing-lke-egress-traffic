@@ -17,6 +17,8 @@ metadata:
     subdomain: loyalty
 spec:
   schedule: "*/2 * * * *"
+  successfulJobsHistoryLimit : 1
+  failedJobsHistoryLimit : 2
   jobTemplate:
     metadata:
       labels:
