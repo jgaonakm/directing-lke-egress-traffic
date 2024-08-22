@@ -6,7 +6,7 @@ metadata:
     app: system
     subdomain: loyalty
 data:
-  SPECIAL_OFFERS_ENDPOINT: egress-sample-server.demo-004.jericalla.com
+  SPECIAL_OFFERS_ENDPOINT: egress-sample-server.demo-004.jericalla.com # URL o IP del NodeBalancer correspondiente al servicio 
 ---
 kind: CronJob
 apiVersion: batch/v1
