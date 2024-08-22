@@ -1,0 +1,44 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: loyalty-program-config
+  labels:
+    app: system
+    subdomain: loyalty
+data:
+  SPECIAL_OFFERS_ENDPOINT: egress-sample-server.demo-004.jericalla.com
+---
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: loyalty-program-consumer
+  labels:
+    app: system
+    subdomain: loyalty
+spec:
+  schedule: "*/2 * * * *"
+  jobTemplate:
+    metadata:
+      labels:
+        subdomain: loyalty
+    spec:
+      activeDeadlineSeconds: 45
+      template:
+        metadata:
+          labels:
+            subdomain: loyalty
+        spec:
+          containers: 
+          - name: loyalty-program
+            image: jgaonaakm/loyalty-program:egress-lke
+            imagePullPolicy: Always
+            env:
+            - name: STARTUPDLL
+              value: "consumer/EventConsumer.dll"
+            - name: CONSUMERPORT
+              value: "5050"
+            envFrom:
+              - configMapRef:
+                  name: loyalty-program-config
+          restartPolicy: Never
+  concurrencyPolicy: Forbid
