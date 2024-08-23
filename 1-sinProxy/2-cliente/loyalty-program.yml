@@ -18,12 +18,14 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
   successfulJobsHistoryLimit : 1
-  failedJobsHistoryLimit : 2
+  failedJobsHistoryLimit : 1
   jobTemplate:
     metadata:
       labels:
         subdomain: loyalty
     spec:
+      activeDeadlineSeconds: 45
+      ttlSecondsAfterFinished: 120
       template:
         metadata:
           labels:
