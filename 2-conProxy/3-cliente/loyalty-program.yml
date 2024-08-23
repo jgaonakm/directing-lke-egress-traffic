@@ -1,0 +1,65 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: loyalty-program-config
+  labels:
+    app: system
+    subdomain: loyalty
+data:
+  SPECIAL_OFFERS_ENDPOINT: egress-sample-server.demo-004.jericalla.com # URL o IP del NodeBalancer correspondiente al servicio 
+---
+kind: ConfigMap
+apiVersion: v1
+metadata: 
+  name: fw-proxy-config
+  labels:
+    app: system
+data:
+  http_proxy: "http://proxy:8888" 
+  HTTP_PROXY: "http://proxy:8888" 
+  https_proxy: "http://proxy:8888" 
+  HTTPS_PROXY: "http://proxy:8888" 
+  no_proxy: "10.2.0.0/24,10.128.0.0/16,localhost,127.0.0.1" 
+  NO_PROXY: "10.2.0.0/24,10.128.0.0/16,localhost,127.0.0.1"
+---
+kind: CronJob
+apiVersion: batch/v1
+metadata:
+  name: loyalty-program-consumer
+  labels:
+    app: system
+    subdomain: loyalty
+spec:
+  schedule: "*/2 * * * *"
+  successfulJobsHistoryLimit : 1
+  failedJobsHistoryLimit : 1
+  jobTemplate:
+    metadata:
+      labels:
+        subdomain: loyalty
+    spec:
+      activeDeadlineSeconds: 45
+      ttlSecondsAfterFinished: 120
+      template:
+        metadata:
+          labels:
+            subdomain: loyalty
+        spec:
+          nodeSelector:
+            egress: "false" # Desplegar en los nodos etiquetados como de trabajo
+          containers: 
+          - name: loyalty-program
+            image: jgaonaakm/loyalty-program:egress-lke
+            imagePullPolicy: Always
+            env:
+            - name: STARTUPDLL
+              value: "consumer/EventConsumer.dll"
+            - name: CONSUMERPORT
+              value: "5050"
+            envFrom:
+              - configMapRef:
+                  name: loyalty-program-config
+              - configMapRef:
+                  name: fw-proxy-config # Cargar la configuración de proxy
+          restartPolicy: Never
+  concurrencyPolicy: Forbid
